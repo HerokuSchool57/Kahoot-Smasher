@@ -78,18 +78,7 @@ function StopSmashing() {
 
 
 function GetChallenge(id)
-{
-//	//Change place
-	// chrome.cookies.getAll({domain: "kahoot.it"}, function(e) {
-        // for (var r = 0; r < e.length; r++)
-            // chrome.cookies.remove({
-                // url: "https://kahoot.it" + e[r].path,
-                // name: e[r].name
-            // })
-    // });
-    
-//     //End
-   
+{ 
     https.get("https://kahoot.it/reserve/session/"+id, res => {
     res.setEncoding("utf8");
     xKahootToken = res.headers["x-kahoot-session-token"];
@@ -108,33 +97,6 @@ function GetChallenge(id)
         
         });
     });
-    
-    //var xhr = new XMLHttpRequest();
-    //xhr.onreadystatechange = function(event)
-    //{
-    //    if(event.currentTarget.readyState ==4)
-    //    {
-    //        if(event.currentTarget.status == 200)
-    //        {
-    //            toDecode = (xhr.responseText.slice(0,-2).split('challenge":"')[1]);
-    //            xKahootToken = xhr.getResponseHeader("x-kahoot-session-token");
-    //        }
-    //        else
-    //        {
-                //GetChallenge(id)
-    //            if(event.currentTarget.status==404)
-    //            {
-    //                SmashingStatus.error = "404"
-    //            }
-    //            else
-    //            {
-    //                GetChallenge(id);
-    //            }
-    //        }
-    //    }
-    //}
-    //xhr.open("GET", "https://kahoot.it/reserve/session/"+id, true);
-    //xhr.send();
 }
 
 function CompleteChallenge(xToken, mask)
