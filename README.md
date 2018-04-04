@@ -22,10 +22,10 @@ Now navigate to the URL <code>http://localhost:3000</code> on the local machine,
 # Usage
 
 To start the smashing go to the URL:
-<code>http://localhost/start/kahoot-id/number-of-smashers/</code>
+<code>http://localhost:3000/start/kahoot-id/number-of-smashers/</code>
 
 You can also use a proxy to redirect to this address so if you want to use an external machine or host a website with this functionality you can just forward to this address based on the request.
 
 
 To stop the smashing go to the URL:
-<code>http://localhost/stop/</code>
+<code>http://localhost:3000/stop/</code>
