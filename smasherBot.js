@@ -385,7 +385,8 @@ function BotObject(token,runningId)
                 //Allow answering
                 if(shouldGuess)
                 {
-                    setTimeout(function(){_self.AnswerQuestion(GetChoice(Object.keys(data.answerMap).length,_self.uniqueId));},answerDelay*Math.random())
+                    let possibleAnswers = data.quizQuestionAnswers[data.questionIndex];
+                    setTimeout(function(){_self.AnswerQuestion(GetChoice(possibleAnswers,_self.uniqueId));}, answerDelay*Math.random())
                 }
                 else
                 {
