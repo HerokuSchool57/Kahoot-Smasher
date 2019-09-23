@@ -123,10 +123,8 @@ function RefreshAnswersSpan() {
     var greenAnswers = 0;
     var blueAnswers = 0;
     var yellowAnswers = 0;
-    for(var i=0; i<currentBotAnswers.length; i++)
-    {
-        switch(currentBotAnswers[i])
-        {
+    for(var i=0; i<currentBotAnswers.length; i++) {
+        switch(currentBotAnswers[i]) {
             case 0:
                 redAnswers++;
                 break;
@@ -140,7 +138,7 @@ function RefreshAnswersSpan() {
                 greenAnswers++;
                 break;
             default:
-                
+                break;
         }
     }
 }
@@ -227,7 +225,15 @@ function BotObject(token, runningId) {
     this.waitingForAnswer = false;
     
     this.openWebSocket.onopen = function(event) {
-        this.send("[{\"version\":\"1.0\",\"minimumVersion\":\"1.0\",\"channel\":\"/meta/handshake\",\"supportedConnectionTypes\":[\"websocket\",\"long-polling\"],\"advice\":{\"timeout\":60000,\"interval\":0},\"id\":\"1\"}]");
+        let openObject =  {
+            version: "1.0",
+            minimumVersion: "1.0",
+            channel: "/meta/handshake",
+            supportedConnectionTypes: ["websocket","long-polling"],
+            advice: {timeout: 60000, interval: 0},
+            id: "1",
+        };
+        this.send(JSON.stringify([openObject]));
     };
     
     this.openWebSocket.onmessage = function(event) {
@@ -262,7 +268,15 @@ function BotObject(token, runningId) {
             return;
         }
         this.waitingForAnswer = false;
-        this.openWebSocket.send("[{\"channel\":\"/service/controller\",\"data\":{\"id\":45,\"type\":\"message\",\"gameid\":"+currentKahootId+",\"host\":\"kahoot.it\",\"content\":\"{\\\"choice\\\":"+choice+",\\\"meta\\\":{\\\"lag\\\":10,\\\"device\\\":{\\\"userAgent\\\":\\\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36\\\",\\\"screen\\\":{\\\"width\\\":1920,\\\"height\\\":1040}}}}\"},\"id\":\""+(this.currentMessageId-1)+"\",\"clientId\":\""+this.clientId+"\"}]");
+        this.SendMessage({
+            data: {
+                id: 45,
+                type: "message",
+                gameid: parseInt(currentKahootId),
+                host: "kahoot.it",
+                content: `{"choice": ${choice}}`,
+            }
+        }, "/service/controller");
     };
     
     this.SendMessage = function(message, channel) {
@@ -290,13 +304,12 @@ function BotObject(token, runningId) {
     };
     
     this.SendSubscription = function(subscribeTo, subscribe) {
-        var message = {subscription:subscribeTo};
+        var message = {subscription: subscribeTo};
         this.SendMessage(message, subscribe?"/meta/subscribe":"/meta/unsubscribe");
     };
     
     this.SendConnectMessage = function() {
-        this.currentMessageId++;
-        this.openWebSocket.send("[{\"channel\":\"/meta/connect\",\"connectionType\":\"websocket\",\"id\":\"" +(this.currentMessageId-1)+ "\",\"clientId\":\""+ this.clientId +"\"}]");
+        this.SendMessage({"connectionType": "websocket"}, "/meta/connect");
     };
     
     this.SendDisconnectMessage = function() {
@@ -306,19 +319,21 @@ function BotObject(token, runningId) {
     };
     
     //Handles the switch block
-    
     this.Handshake = function(message) {
         this.clientId = message.clientId;
         this.SendSubscription("/service/controller", true);
         this.SendSubscription("/service/player", true);
         this.SendSubscription("/service/status", true);
-        this.currentMessageId++;
-        this.openWebSocket.send("[{\"channel\":\"/meta/connect\",\"connectionType\":\"websocket\",\"advice\":{\"timeout\":0},\"id\":\""+(this.currentMessageId-1)+"\",\"clientId\":\""+this.clientId+"\"}]");
+
+        this.SendMessage({
+            "connectionType": "websocket",
+            advice: {timeout: 0},
+        }, "/meta/connect");
     };
     
     this.Subscribe = function(message) {
         this.subscriptionRepliesRecived++;
-        if(this.initalSubscription && this.subscriptionRepliesRecived==3) {
+        if(this.initalSubscription && this.subscriptionRepliesRecived == 3) {
             this.initalSubscription = false;
             this.subscriptionRepliesRecived = 0;
             
@@ -332,7 +347,7 @@ function BotObject(token, runningId) {
             
             this.SendConnectMessage();
         }
-        if(this.subscriptionRepliesRecived==6) {
+        if(this.subscriptionRepliesRecived == 6) {
             this.SendLoginInfo();
         }
     };
@@ -363,18 +378,14 @@ function BotObject(token, runningId) {
                     setTimeout(function() {
                         _self.AnswerQuestion(GetChoice(possibleAnswers, _self.uniqueId));
                     }, answerDelay*Math.random());
-                }
-                else {
+                } else {
                     this.AnswerQuestion(GetChoice(Object.keys(data.answerMap).length, this.uniqueId));
                 }
-                
-            }
-            else {
+            } else {
                 RemoveChoice(this.uniqueId);
                 this.recivedQuestion=true;
             }
-        }
-        else if(data.isCorrect) {
+        } else if(data.isCorrect) {
             this.waitingForAnswer = false;
             //Record result
         }
@@ -387,8 +398,7 @@ function BotObject(token, runningId) {
             if(message.data.error) {
                 console.log("Bad name: " + this.uniqueId);
                 this.SendLoginInfo();
-            }
-            else {
+            } else {
                 AddBotToJoined();
                 console.log("Logged in: " + this.uniqueId);
             }
