@@ -186,14 +186,24 @@ function GenerateName(id)
 function ChallengeSolve(challenge)
 {
     var solved = "";
-    challenge = challenge.replace("console.", "");
-    challenge = challenge.replace("this.angular.isObject(offset)", "true");
-    challenge = challenge.replace("this.angular.isString(offset)", "true");
-    challenge = challenge.replace("this.angular.isDate(offset)", "true");
-    challenge = challenge.replace("this.angular.isArray(offset)", "true");
+    var preChallenge = `
+    _ = {};
+    _.replace = (string, regex, func)=>{
+        outString = string;
+        while(match = regex.exec(string)) {
+            outString = outString.substr(0, match.index) + func(match["0"], match.index) + outString.substr(match.index+1)
+        }
+        return outString;
+    };
+    this.angular = {
+        isObject: ()=>false,
+        isString: ()=>false,
+        isDate: ()=>false,
+        isArray: ()=>false,
+    };`;
+
     (() => {
-        var solver = Function("var _ = {replace: function() {var args = arguments;var str = arguments[0];return str.replace(args[1], args[2]);}};var log = function(){};return "+ challenge);
-        solved = solver().toString();
+        solved = eval(preChallenge + challenge);
     })();
     return solved;
 }
